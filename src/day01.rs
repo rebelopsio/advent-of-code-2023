@@ -1,4 +1,6 @@
-pub fn trebuchet() -> u32 {
+use aho_corasick::{AhoCorasick, PatternID};
+
+pub fn part_1() -> u32 {
     let mut digits: Vec<u32> = Vec::new();
     let mut input: Vec<String> = Vec::new();
     for line in DATA.lines() {
@@ -10,6 +12,39 @@ pub fn trebuchet() -> u32 {
             if c.is_ascii_digit() {
                 nums.push(c.to_digit(10).unwrap());
             }
+        }
+        let digit = format!(
+            "{}{}",
+            nums.clone().into_iter().next().unwrap(),
+            nums.clone().into_iter().last().unwrap()
+        );
+        digits.push(digit.parse::<u32>().unwrap());
+    });
+    digits.iter().sum()
+}
+
+pub fn part_2() -> u32 {
+    let patterns = &[
+        "1", "2", "3", "4", "5", "6", "7", "8", "9", "one", "two", "three", "four", "five", "six",
+        "seven", "eight", "nine",
+    ];
+    let replace = &[
+        "1", "2", "3", "4", "5", "6", "7", "8", "9", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+    ];
+    let ac = AhoCorasick::new(patterns).unwrap();
+    let mut digits: Vec<u32> = Vec::new();
+    let mut input: Vec<String> = Vec::new();
+    for line in DATA.lines() {
+        input.push(line.to_string());
+    }
+    input.iter().for_each(|line| {
+        let matches: Vec<PatternID> = ac
+            .find_overlapping_iter(line)
+            .map(|mat| mat.pattern())
+            .collect();
+        let mut nums: Vec<u32> = Vec::new();
+        for mat in matches {
+            nums.push(replace[mat].parse::<u32>().unwrap());
         }
         let digit = format!(
             "{}{}",
@@ -1027,8 +1062,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
-        let result = trebuchet();
+    fn test_part_1() {
+        let result = part_1();
         assert_eq!(result, 55621);
+    }
+    #[test]
+    fn test_part_2() {
+        let result = part_2();
+        assert_eq!(result, 53592);
     }
 }
